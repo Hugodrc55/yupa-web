@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>YUPA - Résumé</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      background-color: #fff;
+    }
+
+    h1 {
+      color: #5e00ff;
+      text-align: center;
+    }
+
+    .job-block, .task-block {
+      margin: 30px auto;
+      max-width: 700px;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      background-color: #f9f9f9;
+    }
+
+    .task-title {
+      font-weight: bold;
+      font-size: 18px;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .skill-section {
+      margin-top: 10px;
+    }
+
+    .skill-section h4 {
+      color: #5e00ff;
+      margin-bottom: 6px;
+    }
+
+    .skill-section ul {
+      list-style: disc;
+      padding-left: 20px;
+    }
+
+    .btn {
+      display: block;
+      background-color: #5e00ff;
+      color: white;
+      padding: 14px 30px;
+      border: none;
+      border-radius: 30px;
+      font-size: 16px;
+      margin: 30px auto;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎉 Récapitulatif de votre parcours YUPA</h1>
+
+  <div class="job-block">
+    <h2>Métier : <span id="jobName"></span></h2>
+    <h3>Missions sélectionnées :</h3>
+    <ul id="missionList"></ul>
+  </div>
+
+  <h2 style="text-align: center; color: #5e00ff;">Tâches & Compétences</h2>
+  <div id="taskContainer"></div>
+
+  <button class="btn" onclick="generatePdf()">Recevoir le PDF</button>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const job = params.get("job");
+    const missions = JSON.parse(params.get("missions") || "[]");
+    const tasks = JSON.parse(params.get("tasks") || "[]");
+    const softSkills = JSON.parse(params.get("softSkills") || "{}");
+    const hardSkills = JSON.parse(params.get("hardSkills") || "{}");
+
+    document.getElementById("jobName").textContent = job;
+
+    const missionList = document.getElementById("missionList");
+    missions.forEach(m => {
+      const li = document.createElement("li");
+      li.textContent = m;
+      missionList.appendChild(li);
+    });
+
+    const taskContainer = document.getElementById("taskContainer");
+    tasks.forEach(task => {
+      const block = document.createElement("div");
+      block.className = "task-block";
+
+      const title = document.createElement("div");
+      title.className = "task-title";
+      title.textContent = task;
+      block.appendChild(title);
+
+      const soft = softSkills[task] || [];
+      const hard = hardSkills[task] || [];
+
+      if (soft.length > 0) {
+        const softSection = document.createElement("div");
+        softSection.className = "skill-section";
+        softSection.innerHTML = `<h4>🟢 Soft Skills :</h4><ul>${soft.map(s => `<li>${s}</li>`).join("")}</ul>`;
+        block.appendChild(softSection);
+      }
+
+      if (hard.length > 0) {
+        const hardSection = document.createElement("div");
+        hardSection.className = "skill-section";
+        hardSection.innerHTML = `<h4>🔵 Hard Skills :</h4><ul>${hard.map(s => `<li>${s}</li>`).join("")}</ul>`;
+        block.appendChild(hardSection);
+      }
+
+      taskContainer.appendChild(block);
+    });
+
+    async function generatePdf() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      let y = 10;
+      doc.setFontSize(16);
+      doc.text("Récapitulatif de votre parcours YUPA", 10, y);
+      y += 10;
+
+      doc.setFontSize(12);
+      doc.text(`Métier sélectionné : ${job}`, 10, y);
+      y += 10;
+
+      doc.text("Missions :", 10, y);
+      missions.forEach(m => doc.text(`- ${m}`, 15, y += 7));
+      y += 10;
+
+      tasks.forEach(task => {
+        doc.text(` ${task}`, 10, y += 10);
+
+        const soft = softSkills[task] || [];
+        const hard = hardSkills[task] || [];
+
+        if (soft.length > 0) {
+          doc.text("Soft Skills :", 12, y += 6);
+          soft.forEach(s => doc.text(`• ${s}`, 18, y += 6));
+        }
+
+        if (hard.length > 0) {
+          doc.text("Hard Skills :", 12, y += 6);
+          hard.forEach(s => doc.text(`• ${s}`, 18, y += 6));
+        }
+      });
+
+      const pdfBlob = doc.output("blob");
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+
+    
+      const link = document.createElement("a");
+      link.href = pdfUrl;
+      link.download = "yuppa_parcours.pdf";
+      link.click();
+
+      
+      const mailto = `mailto:contact.formaplus@gmail.com?subject=PDF%20YUPPA&body=Bonjour,%0D%0A%0D%0AVeuillez trouver ci-joint mon PDF généré depuis YUPPA.%0D%0A(Pensez à joindre le pdf téléchargé)%0D%0AMerci !`;
+      window.open(mailto, "_blank");
+    }
+  </script>
+
+</body>
+</html>

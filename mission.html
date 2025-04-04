@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Missions - YUPA</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #ffffff;
+      padding: 40px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #5e00ff;
+      font-size: 28px;
+    }
+
+    #selectedJob {
+      font-size: 18px;
+      font-weight: bold;
+      margin-top: 10px;
+      color: #333;
+    }
+
+    .mission-list {
+      max-width: 500px;
+      margin: 30px auto;
+      text-align: left;
+    }
+
+    .mission-item {
+      background-color: #f9f9f9;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+    }
+
+    .mission-item input {
+      margin-right: 10px;
+    }
+
+    .btn {
+      background-color: #5e00ff;
+      color: #fff;
+      padding: 12px 30px;
+      border: none;
+      border-radius: 30px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 30px;
+    }
+
+    .btn:disabled {
+      background-color: #aaa;
+    }
+
+    #loader {
+      font-size: 18px;
+      color: #5e00ff;
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>YUPA</h1>
+  <div id="selectedJob">Métier sélectionné : ...</div>
+  <h2>Sélectionnez des missions</h2>
+
+  <div id="loader">Chargement des missions...</div>
+  <div id="missionList" class="mission-list" style="display: none;"></div>
+
+  <button id="submitBtn" class="btn" disabled>Soumettre</button>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedJob = urlParams.get("job");
+
+    const selectedJobDiv = document.getElementById("selectedJob");
+    selectedJobDiv.textContent = `Métier sélectionné : ${selectedJob}`;
+
+    const loader = document.getElementById("loader");
+    const missionList = document.getElementById("missionList");
+    const submitBtn = document.getElementById("submitBtn");
+
+    // Appel au backend pour récupérer les missions
+    fetch("https://backend-fryj.onrender.com/chatbot", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: `Fais-moi une liste d'au moins 6 missions concises et claires du métier ${selectedJob}.`
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      const missions = data.response
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0);
+
+      loader.style.display = "none";
+      missionList.style.display = "block";
+
+      missions.forEach((mission, index) => {
+        const div = document.createElement("div");
+        div.className = "mission-item";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.id = `mission-${index}`;
+        checkbox.value = mission;
+
+        const label = document.createElement("label");
+        label.htmlFor = checkbox.id;
+        label.textContent = mission;
+
+        div.appendChild(checkbox);
+        div.appendChild(label);
+        missionList.appendChild(div);
+      });
+    })
+    .catch(error => {
+      loader.textContent = "Erreur lors du chargement des missions.";
+      console.error(error);
+    });
+
+    missionList.addEventListener("change", () => {
+      const checked = document.querySelectorAll("input[type='checkbox']:checked");
+      submitBtn.disabled = checked.length === 0;
+    });
+
+    submitBtn.addEventListener("click", () => {
+      const selected = [...document.querySelectorAll("input[type='checkbox']:checked")]
+        .map(cb => cb.value);
+      const query = `task.html?job=${encodeURIComponent(selectedJob)}&missions=${encodeURIComponent(JSON.stringify(selected))}`;
+      window.location.href = query;
+    });
+  </script>
+
+</body>
+</html>

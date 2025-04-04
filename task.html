@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>YUPA - Tâches</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #fff;
+      padding: 40px;
+      text-align: center;
+    }
+
+    h1 { color: #5e00ff; }
+    #selectedJobText { margin-bottom: 20px; font-weight: bold; }
+
+    .mission-block {
+      margin-top: 20px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: left;
+    }
+
+    .mission-title {
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .task {
+      display: flex;
+      align-items: center;
+      background-color: #f2f2f2;
+      margin-bottom: 8px;
+      padding: 10px;
+      border-radius: 10px;
+    }
+
+    .task input { margin-right: 10px; }
+
+    .btn {
+      background-color: #5e00ff;
+      color: #fff;
+      padding: 12px 30px;
+      border: none;
+      border-radius: 30px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 30px;
+    }
+
+    .btn:disabled { background-color: #aaa; }
+
+    #loader {
+      margin-top: 20px;
+      color: #5e00ff;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>YUPA</h1>
+  <h2>Sélectionnez les tâches</h2>
+  <div id="selectedJobText"></div>
+  <div id="loader">Chargement des tâches...</div>
+  <div id="taskContainer"></div>
+
+  <button id="submitBtn" class="btn" disabled>Soumettre</button>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedJob = urlParams.get("job");
+    const missions = JSON.parse(urlParams.get("missions") || "[]");
+
+    const selectedTasks = new Set();
+
+    const taskContainer = document.getElementById("taskContainer");
+    const loader = document.getElementById("loader");
+    const submitBtn = document.getElementById("submitBtn");
+
+    document.getElementById("selectedJobText").textContent = `Métier sélectionné : ${selectedJob}`;
+
+    // Fonction pour créer l'affichage des tâches
+    const renderTasks = (mission, tasks) => {
+      const missionBlock = document.createElement("div");
+      missionBlock.className = "mission-block";
+
+      const missionTitle = document.createElement("div");
+      missionTitle.className = "mission-title";
+      missionTitle.textContent = mission;
+      missionBlock.appendChild(missionTitle);
+
+      tasks.forEach(task => {
+        const taskDiv = document.createElement("div");
+        taskDiv.className = "task";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.value = task;
+
+        checkbox.addEventListener("change", () => {
+          if (checkbox.checked) {
+            selectedTasks.add(task);
+          } else {
+            selectedTasks.delete(task);
+          }
+          submitBtn.disabled = selectedTasks.size === 0;
+        });
+
+        const label = document.createElement("label");
+        label.textContent = task;
+
+        taskDiv.appendChild(checkbox);
+        taskDiv.appendChild(label);
+        missionBlock.appendChild(taskDiv);
+      });
+
+      taskContainer.appendChild(missionBlock);
+    };
+
+    // Appels API pour chaque mission
+    const fetchAllTasks = async () => {
+      for (const mission of missions) {
+        try {
+          const response = await fetch("https://backend-fryj.onrender.com/chatbot", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              message: `Liste-moi les tâches associées à la mission '${mission}' en utilisant des phrases courtes et concises, sans numéro devant.`
+            })
+          });
+
+          const data = await response.json();
+          const taskList = data.response
+            .split("\n")
+            .map(t => t.trim())
+            .filter(Boolean);
+
+          renderTasks(mission, taskList);
+        } catch (error) {
+          console.error("Erreur lors de la récupération des tâches :", error);
+          renderTasks(mission, [`Erreur de chargement pour la mission : ${mission}`]);
+        }
+      }
+
+      loader.style.display = "none";
+    };
+
+    fetchAllTasks();
+
+    submitBtn.addEventListener("click", () => {
+      const tasksArray = Array.from(selectedTasks);
+      const query = `competence.html?job=${encodeURIComponent(selectedJob)}&missions=${encodeURIComponent(JSON.stringify(missions))}&tasks=${encodeURIComponent(JSON.stringify(tasksArray))}`;
+      window.location.href = query;
+    });
+  </script>
+
+</body>
+</html>

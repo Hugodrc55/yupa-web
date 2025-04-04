@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>YUPA - Compétences</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #fff;
+      padding: 40px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #5e00ff;
+    }
+
+    .task-block {
+      margin-top: 30px;
+      text-align: left;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .task-title {
+      font-weight: bold;
+      font-size: 18px;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .subtitle {
+      font-weight: bold;
+      margin-top: 10px;
+      color: #5e00ff;
+    }
+
+    .skill {
+      display: flex;
+      align-items: center;
+      margin: 5px 0;
+    }
+
+    .skill input {
+      margin-right: 10px;
+    }
+
+    .btn {
+      background-color: #5e00ff;
+      color: white;
+      padding: 12px 30px;
+      border: none;
+      border-radius: 30px;
+      font-size: 16px;
+      margin-top: 30px;
+      cursor: pointer;
+    }
+
+    .btn:disabled {
+      background-color: #aaa;
+    }
+
+    #loader {
+      font-size: 18px;
+      margin-top: 20px;
+      color: #5e00ff;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>YUPA</h1>
+  <h2>Sélectionnez les compétences à travailler</h2>
+
+  <div id="loader">Chargement des compétences...</div>
+  <div id="competenceContainer"></div>
+  <button class="btn" id="submitBtn">Finaliser</button>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const selectedJob = params.get("job");
+    const selectedMissions = JSON.parse(params.get("missions") || "[]");
+    const selectedTasks = JSON.parse(params.get("tasks") || "[]");
+
+    const competenceContainer = document.getElementById("competenceContainer");
+    const loader = document.getElementById("loader");
+    const submitBtn = document.getElementById("submitBtn");
+
+    const selectedSoftSkillsByTask = {};
+    const selectedHardSkillsByTask = {};
+
+    const renderSkills = (task, softSkills, hardSkills) => {
+      const block = document.createElement("div");
+      block.className = "task-block";
+
+      const title = document.createElement("div");
+      title.className = "task-title";
+      title.textContent = task;
+      block.appendChild(title);
+
+      // Soft Skills
+      const softTitle = document.createElement("div");
+      softTitle.className = "subtitle";
+      softTitle.textContent = "🟢 Soft Skills :";
+      block.appendChild(softTitle);
+
+      softSkills.forEach(skill => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "skill";
+
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.addEventListener("change", () => {
+          selectedSoftSkillsByTask[task] = selectedSoftSkillsByTask[task] || [];
+          if (input.checked) {
+            selectedSoftSkillsByTask[task].push(skill);
+          } else {
+            selectedSoftSkillsByTask[task] = selectedSoftSkillsByTask[task].filter(s => s !== skill);
+          }
+        });
+
+        const label = document.createElement("label");
+        label.textContent = skill;
+
+        wrapper.appendChild(input);
+        wrapper.appendChild(label);
+        block.appendChild(wrapper);
+      });
+
+      // Hard Skills
+      const hardTitle = document.createElement("div");
+      hardTitle.className = "subtitle";
+      hardTitle.textContent = "🔵 Hard Skills :";
+      block.appendChild(hardTitle);
+
+      hardSkills.forEach(skill => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "skill";
+
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.addEventListener("change", () => {
+          selectedHardSkillsByTask[task] = selectedHardSkillsByTask[task] || [];
+          if (input.checked) {
+            selectedHardSkillsByTask[task].push(skill);
+          } else {
+            selectedHardSkillsByTask[task] = selectedHardSkillsByTask[task].filter(s => s !== skill);
+          }
+        });
+
+        const label = document.createElement("label");
+        label.textContent = skill;
+
+        wrapper.appendChild(input);
+        wrapper.appendChild(label);
+        block.appendChild(wrapper);
+      });
+
+      competenceContainer.appendChild(block);
+    };
+
+    const fetchSkillsForTask = async (task) => {
+      try {
+        const [softRes, hardRes] = await Promise.all([
+          fetch("https://backend-fryj.onrender.com/chatbot", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              message: `Donne-moi une liste de 3 à 6 soft skills pour réaliser la tâche '${task}'. Réponds sous forme de liste.`
+            })
+          }),
+          fetch("https://backend-fryj.onrender.com/chatbot", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              message: `Donne-moi une liste de 3 à 6 hard skills pour réaliser la tâche '${task}'. Réponds sous forme de liste.`
+            })
+          })
+        ]);
+
+        const softData = await softRes.json();
+        const hardData = await hardRes.json();
+
+        const softSkills = softData.response.split("\n").map(s => s.trim()).filter(Boolean);
+        const hardSkills = hardData.response.split("\n").map(s => s.trim()).filter(Boolean);
+
+        renderSkills(task, softSkills, hardSkills);
+      } catch (error) {
+        console.error("Erreur lors du chargement des compétences :", error);
+        renderSkills(task, ["Erreur de chargement"], ["Erreur de chargement"]);
+      }
+    };
+
+    const fetchAllSkills = async () => {
+      for (const task of selectedTasks) {
+        await fetchSkillsForTask(task);
+      }
+      loader.style.display = "none";
+    };
+
+    fetchAllSkills();
+
+    submitBtn.addEventListener("click", () => {
+      const finalUrl = `final.html?job=${encodeURIComponent(selectedJob)}&missions=${encodeURIComponent(JSON.stringify(selectedMissions))}&tasks=${encodeURIComponent(JSON.stringify(selectedTasks))}&softSkills=${encodeURIComponent(JSON.stringify(selectedSoftSkillsByTask))}&hardSkills=${encodeURIComponent(JSON.stringify(selectedHardSkillsByTask))}`;
+      window.location.href = finalUrl;
+    });
+  </script>
+
+</body>
+</html>
