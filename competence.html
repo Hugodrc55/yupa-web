@@ -163,14 +163,14 @@
     const fetchSkillsForTask = async (task) => {
       try {
         const [softRes, hardRes] = await Promise.all([
-          fetch("https://backend-fryj.onrender.com/chatbot", {
+          fetch("https://backendclaude.onrender.com/chatbot", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               message: `Donne-moi une liste de 3 à 6 soft skills pour réaliser la tâche '${task}'. Réponds sous forme de liste.`
             })
           }),
-          fetch("https://backend-fryj.onrender.com/chatbot", {
+          fetch("https://backendclaude.onrender.com/chatbot", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
