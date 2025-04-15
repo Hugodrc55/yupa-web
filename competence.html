@@ -61,11 +61,20 @@
       background-color: #aaa;
     }
 
-    #loader {
-      font-size: 18px;
-      margin-top: 20px;
-      color: #5e00ff;
-    }
+    .loader-spinner {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #5e00ff;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
   </style>
 </head>
 <body>
@@ -73,7 +82,9 @@
   <h1>YUPA</h1>
   <h2>Sélectionnez les compétences à travailler</h2>
 
-  <div id="loader">Chargement des compétences...</div>
+  <div id="loader">
+    <div class="loader-spinner"></div>
+  </div>
   <div id="competenceContainer"></div>
   <button class="btn" id="submitBtn">Finaliser</button>
 

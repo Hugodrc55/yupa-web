@@ -59,10 +59,23 @@
     }
 
     #loader {
-      font-size: 18px;
-      color: #5e00ff;
-      margin-top: 30px;
-    }
+  margin-top: 30px;
+}
+
+.loader-spinner {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #5e00ff;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
   </style>
 </head>
 <body>
@@ -71,7 +84,9 @@
   <div id="selectedJob">Métier sélectionné : ...</div>
   <h2>Sélectionnez des missions</h2>
 
-  <div id="loader">Chargement des missions...</div>
+  <div id="loader">
+    <div class="loader-spinner"></div>
+  </div>
   <div id="missionList" class="mission-list" style="display: none;"></div>
 
   <button id="submitBtn" class="btn" disabled>Soumettre</button>
