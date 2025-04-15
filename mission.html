@@ -88,13 +88,13 @@
     const submitBtn = document.getElementById("submitBtn");
 
     // Appel au backend pour récupérer les missions
-    fetch("https://backend-fryj.onrender.com/chatbot", {
+    fetch("https://backendclaude.onrender.com/chatbot", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        message: `Fais-moi une liste d'au moins 6 missions concises et claires du métier ${selectedJob}.`
+        message: `Fais-moi une liste d'au moins 6 missions concises et claires du métier ${selectedJob}. (je ne veux pas d'autre message juste une liste c'est tout)`
       })
     })
     .then(response => response.json())
