@@ -122,52 +122,107 @@
     });
 
     async function generatePdf() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF("p", "mm", "a4");
 
-      let y = 10;
-      doc.setFontSize(16);
-      doc.text("Récapitulatif de votre parcours YUPA", 10, y);
-      y += 10;
+  let y = 20;
+  const lineHeight = 7;
 
-      doc.setFontSize(12);
-      doc.text(`Métier sélectionné : ${job}`, 10, y);
-      y += 10;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(18);
+  doc.setTextColor(94, 0, 255); // violet
+  doc.text("🚀 Récapitulatif de votre parcours", 10, y);
+  y += 12;
 
-      doc.text("Missions :", 10, y);
-      missions.forEach(m => doc.text(`- ${m}`, 15, y += 7));
-      y += 10;
+  doc.setFontSize(12);
+  doc.setTextColor(0, 0, 0);
+  doc.setFont("helvetica", "normal");
+  doc.text(`📌 Métier sélectionné : ${job}`, 10, y);
+  y += 10;
 
-      tasks.forEach(task => {
-        doc.text(` ${task}`, 10, y += 10);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(94, 0, 255);
+  doc.text("🎯 Missions :", 10, y);
+  y += 8;
 
-        const soft = softSkills[task] || [];
-        const hard = hardSkills[task] || [];
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(0, 0, 0);
+  missions.forEach(m => {
+    doc.text(`- ${m}`, 15, y);
+    y += lineHeight;
+  });
 
-        if (soft.length > 0) {
-          doc.text("Soft Skills :", 12, y += 6);
-          soft.forEach(s => doc.text(`• ${s}`, 18, y += 6));
-        }
+  y += 5;
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(94, 0, 255);
+  doc.text("🧠 Tâches & Compétences :", 10, y);
+  y += 10;
 
-        if (hard.length > 0) {
-          doc.text("Hard Skills :", 12, y += 6);
-          hard.forEach(s => doc.text(`• ${s}`, 18, y += 6));
-        }
+  tasks.forEach(task => {
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(0, 0, 0);
+    doc.text(`📌 ${task}`, 10, y);
+    y += 8;
+
+    const soft = softSkills[task] || [];
+    const hard = hardSkills[task] || [];
+
+    if (soft.length > 0) {
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(94, 0, 255);
+      doc.text("🟢 Soft Skills :", 12, y);
+      y += 7;
+
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(0, 0, 0);
+      soft.forEach(s => {
+        doc.text(`• ${s}`, 17, y);
+        y += lineHeight;
       });
-
-      const pdfBlob = doc.output("blob");
-      const pdfUrl = URL.createObjectURL(pdfBlob);
-
-    
-      const link = document.createElement("a");
-      link.href = pdfUrl;
-      link.download = "yuppa_parcours.pdf";
-      link.click();
-
-      
-      const mailto = `mailto:contact.formaplus@gmail.com?subject=PDF%20YUPPA&body=Bonjour, (Pensez à joindre le pdf téléchargé) %0D%0A%0D%0AVeuillez trouver ci-joint mon PDF généré depuis YUPPA.%0D%0A%0D%0AMerci !`;
-      window.open(mailto, "_blank");
     }
+
+    if (hard.length > 0) {
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(94, 0, 255);
+      doc.text("🔵 Hard Skills :", 12, y);
+      y += 7;
+
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(0, 0, 0);
+      hard.forEach(s => {
+        doc.text(`• ${s}`, 17, y);
+        y += lineHeight;
+      });
+    }
+
+    y += 5;
+
+    // Si on approche du bas de page, ajoute une page
+    if (y > 270) {
+      doc.addPage();
+      y = 20;
+    }
+  });
+
+  // Signature
+  doc.setFontSize(10);
+  doc.setTextColor(150, 150, 150);
+  doc.text("Merci d'avoir utilisé YUPPA !", 10, y + 10);
+
+  // Téléchargement
+  const pdfBlob = doc.output("blob");
+  const pdfUrl = URL.createObjectURL(pdfBlob);
+
+  const link = document.createElement("a");
+  link.href = pdfUrl;
+  link.download = "yuppa_parcours.pdf";
+  link.click();
+
+  // Ouvrir mail
+  const mailto = `mailto:contact.formaplus@gmail.com?subject=PDF%20YUPPA&body=Bonjour, (Pensez à joindre le pdf téléchargé) %0D%0A%0D%0AVeuillez trouver ci-joint mon PDF généré depuis YUPPA.%0D%0A%0D%0AMerci !`;
+  window.open(mailto, "_blank");
+}
+
   </script>
 
 </body>
