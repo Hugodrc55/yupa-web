@@ -1,0 +1,3 @@
+[submodule "yupa-backend"]
+    path = yupa-backend
+    url = https://backendclaude.onrender.com/chatbot
