@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>YUPA - Tâches</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;700&family=Lilita+One&display=swap" rel="stylesheet">
   <style>
     * {
       box-sizing: border-box;
@@ -22,12 +23,14 @@
       color: #5e00ff;
       font-size: 32px;
       margin-bottom: 10px;
+      font-family: 'Lilita One', sans-serif;
     }
 
     h2 {
       font-size: 22px;
       margin-bottom: 10px;
       color: #111;
+      font-family: 'Lilita One', sans-serif;
     }
 
     #selectedJobText {
@@ -35,6 +38,7 @@
       font-weight: bold;
       font-size: 18px;
       color: #333;
+      font-family: 'League Spartan', sans-serif;
     }
 
     .mission-block {
@@ -43,6 +47,7 @@
       margin-left: auto;
       margin-right: auto;
       text-align: left;
+      font-family: 'League Spartan', sans-serif;
     }
 
     .mission-title {
@@ -50,6 +55,7 @@
       font-size: 18px;
       color: #5e00ff;
       margin-bottom: 10px;
+      font-family: 'League Spartan', sans-serif;
     }
 
     .task {
@@ -87,6 +93,7 @@
       margin-top: 30px;
       transition: background-color 0.3s ease, transform 0.2s ease;
       box-shadow: 0 8px 20px rgba(94, 0, 255, 0.2);
+      font-family: 'Lilita One', sans-serif;
     }
 
     .btn:hover {
@@ -100,47 +107,80 @@
       cursor: not-allowed;
     }
 
-    /* Loader IA animée */
     #loader {
       margin-top: 40px;
       display: flex;
       justify-content: center;
-      align-items: center;
-      font-size: 18px;
-      font-weight: 500;
-      color: #5e00ff;
-      height: 30px;
     }
 
-    .thinking-loader .text {
-      margin-right: 5px;
+    .loader-svg {
+      width: 48px;
+      height: 48px;
     }
 
-    .dot {
-      animation: bounce 1.4s infinite;
-      font-size: 22px;
-      line-height: 0;
-      margin: 0 1px;
+    .loader-circle {
+      fill: none;
+      stroke: #5e00ff;
+      stroke-width: 4;
+      stroke-linecap: round;
+      animation: rotate 1.2s linear infinite;
+      stroke-dasharray: 80;
+      stroke-dashoffset: 60;
     }
+    .thinking-loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 18px;
+  font-weight: 500;
+  color: #5e00ff;
+  margin-top: 40px;
+  height: 30px;
+  font-family: 'League Spartan', sans-serif;
+}
 
-    .dot:nth-child(2) {
-      animation-delay: 0.2s;
-    }
+.thinking-loader .text {
+  margin-right: 5px;
+}
 
-    .dot:nth-child(3) {
-      animation-delay: 0.4s;
-    }
+.dot {
+  animation: bounce 1.4s infinite;
+  font-size: 22px;
+  line-height: 0;
+  margin: 0 1px;
+}
 
-    .dot:nth-child(4) {
-      animation-delay: 0.6s;
-    }
+.dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+.dot:nth-child(4) {
+  animation-delay: 0.6s;
+}
 
-    @keyframes bounce {
-      0%, 80%, 100% {
-        transform: translateY(0);
+@keyframes bounce {
+  0%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-8px);
+  }
+}
+
+    @keyframes rotate {
+      0% {
+        stroke-dashoffset: 80;
+        transform: rotate(0deg);
       }
-      40% {
-        transform: translateY(-8px);
+      50% {
+        stroke-dashoffset: 20;
+        transform: rotate(180deg);
+      }
+      100% {
+        stroke-dashoffset: 80;
+        transform: rotate(360deg);
       }
     }
   </style>
